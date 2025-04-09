@@ -1,0 +1,11 @@
+# Requirements for RAG using NLP project
+PyMuPDF>=1.24.0  # For reading PDFs
+tqdm>=4.66.2  # For progress bars
+sentence-transformers>=2.6.1  # For embedding models
+accelerate>=0.28.0  # For quantization model loading
+bitsandbytes>=0.43.0  # For quantizing models
+flash-attn>=2.5.6  # For faster LLM inference
+spacy>=3.7.4  # For sentence splitting
+pandas>=2.2.1  # For data analysis
+numpy>=1.26.4  # For numerical operations
+# Note: Install torch separately with CUDA support for GPU usage, e.g., torch>=2.1.1
