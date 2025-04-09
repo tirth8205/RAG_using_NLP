@@ -93,19 +93,3 @@ To run this project locally, follow these steps:
 ## License
 
 This project is licensed under the MIT License.
-```
-
-**Instructions:**
-1. Open `README.md` in your editor (e.g., VS Code, nano, or any text editor).
-2. Replace the entire content of the file with the above Markdown text.
-3. Save the file.
-
-**Explanation of Formatting:**
-- **Headings:** Used proper Markdown heading levels (`#`, `##`, `###`) for hierarchy.
-- **Lists:** Used `-` for unordered lists and numbered lists (`1.`, `2.`, etc.) where appropriate.
-- **Code Blocks:** All commands are wrapped in triple backticks (```) with the language specified (e.g., ```bash, ```python) for syntax highlighting on GitHub.
-- **Links:** Internal links (e.g., `[Setup](#setup)`) and external links (e.g., PyTorch site) are properly formatted using `[text](url)`.
-- **Bold and Italics:** Used `**` for bold (e.g., **Clone the Repository**) and `_` for italics (e.g., _Notes_) where emphasis is needed.
-- **Consistency:** Ensured consistent spacing, line breaks, and formatting for readability.
-
-This `README.md` is now properly formatted and ready for your GitHub repository. Let me know once you’ve updated the file, and I’ll provide the next step to push these changes to your GitHub repository! If you need any adjustments, just let me know.
