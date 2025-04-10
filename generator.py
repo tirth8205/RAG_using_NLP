@@ -6,7 +6,7 @@ from typing import List, Dict
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 LLM_MODEL_ID = 'google/gemma-2b-it'
 
-def load_llm() -> Tuple[AutoTokenizer, AutoModelForCausalLM]:
+def load_llm() -> tuple[AutoTokenizer, AutoModelForCausalLM]:
     """Load the LLM and tokenizer."""
     try:
         tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL_ID)
@@ -22,8 +22,7 @@ def generate_answer(query: str, context_items: List[Dict]) -> str:
     if not tokenizer or not model:
         return 'Failed to load LLM.'
 
-    context = '- ' + '
-- '.join([item['sentence_chunk'] for item in context_items])
+    context = '- ' + '\n- '.join([item['sentence_chunk'] for item in context_items])
     base_prompt = """Based on the following context, provide a concise, factual answer to the query.
 Context:
 {context}
@@ -41,4 +40,3 @@ Answer:""".format(context=context, query=query)
     except Exception as e:
         print(f'Error generating answer: {e}')
         return 'Unable to generate answer.'
-

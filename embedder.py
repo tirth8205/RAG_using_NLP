@@ -35,4 +35,3 @@ def load_embeddings(embeddings_path: str) -> Tuple[torch.Tensor, List[Dict]]:
     except Exception as e:
         print(f'Error loading embeddings: {e}')
         return None, []
-

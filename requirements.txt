@@ -6,7 +6,7 @@ faiss-cpu>=1.7.4
 pymupdf>=1.24.0
 tqdm>=4.66.2
 pandas>=2.0.0
-numpy>=1.24.0
-spacy>=3.7.0
-
-gradio>=4.0.0
+numpy==1.26.4
+spacy==3.6.1
+gradio==3.50.2
+typer==0.9.4

@@ -24,4 +24,3 @@ def retrieve_relevant_resources(query: str, embeddings: torch.Tensor, n_resource
     except Exception as e:
         print(f'Error in retrieval: {e}')
         return torch.tensor([]), torch.tensor([])
-

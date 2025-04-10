@@ -2,8 +2,8 @@
 import argparse
 from pdf_processor import extract_and_chunk_pdf
 from embedder import create_and_save_embeddings
-from retriever import load_embeddings, retrieve_relevant_resources
-from generator import load_llm, generate_answer
+from retriever import retrieve_relevant_resources
+from generator import generate_answer
 from typing import List, Dict
 
 # Default constants
