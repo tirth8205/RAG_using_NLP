@@ -1,95 +1,65 @@
-# RAG using NLP
+# Local RAG Pipeline using NLP for PDF Q&A
 
-This project implements a Retrieval-Augmented Generation (RAG) pipeline using Natural Language Processing (NLP) techniques to enable question-answering on PDF documents. It runs locally on a GPU and uses an open-source textbook on ubiquitous computing as a sample dataset.
+This project implements a **Retrieval-Augmented Generation (RAG)** pipeline using **Natural Language Processing (NLP)** techniques to answer questions based on a user-specified PDF document. It runs locally on a GPU, processing text, generating embeddings, retrieving relevant chunks, and producing answers with a Large Language Model (LLM).
 
 ## Features
-
-- Extracts and preprocesses text from PDFs using NLP tools like spaCy.
-- Embeds text chunks using a pre-trained model (`all-mpnet-base-v2`).
-- Implements a retrieval system for relevant content.
-- Generates answers with a Large Language Model (LLM).
-
-## Requirements
-
-- Python 3.8+
-- NVIDIA GPU (tested on RTX 4090) or equivalent
-- Libraries: PyMuPDF, spaCy, sentence-transformers, torch, tqdm, accelerate, bitsandbytes, flash-attn
-- See the [Setup](#setup) section for detailed instructions.
-
-## Usage
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/tirth8205/RAG_using_NLP.git
-   ```
-2. Install dependencies (refer to the [Setup](#setup) section below).
-3. Run `RAG_using_NLP.ipynb` to process a PDF and start querying.
-4. 3. **Download the Sample PDF** (if not already present):
-   - The notebook uses "Ubiquitous-Computing.pdf" as a sample dataset. It will be downloaded automatically when you run the notebook, or you can manually download it from [here](https://pervasivecomputing.se/M7012E_2014/material/Wiley.Ubiquitous.Computing.Smart.Devices.Environments.And.Interactions.May.2009.eBook.pdf).
+- **Custom PDF Support**: Users can upload any PDF via a command-line argument.
+- **Local Execution**: Runs on your GPU (e.g., NVIDIA RTX 4090) for privacy and speed.
+- **NLP-Driven**: Leverages text extraction, chunking, and embeddings for robust RAG.
+- **Modular Design**: Organized into reusable modules for maintainability.
 
 ## Setup
-
-To run this project locally, follow these steps:
-
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/tirth8205/RAG_using_NLP.git
-   cd RAG_using_NLP
+   git clone https://github.com/yourusername/rag-using-nlp.git
+   cd rag-using-nlp
    ```
-
-2. **Create a Virtual Environment** (recommended):
+2. **Install Dependencies**:
    ```bash
-   python -m venv rag_env
-   source rag_env/bin/activate  # On Windows: rag_env\Scripts\activate
+   pip install -r requirements.txt
+   python -m spacy download en_core_web_sm
    ```
-
-3. **Install PyTorch with CUDA Support** (for GPU usage):
-   - Install `torch` with CUDA support based on your CUDA version. For example, for CUDA 12.1:
+3. **Run the Pipeline**:
+   - Use the default PDF:
      ```bash
-     pip install torch>=2.1.1 --index-url https://download.pytorch.org/whl/cu121
+     python rag_pipeline.py --query "What is User Awareness?"
      ```
-   - Check available CUDA versions at [PyTorch's official site](https://pytorch.org/get-started/locally/). If you don’t have a GPU, install the CPU version:
+   - Or specify your own PDF:
      ```bash
-     pip install torch>=2.1.1
+     python rag_pipeline.py --pdf /path/to/your/file.pdf --query "Your question here"
      ```
 
-4. **Install Other Dependencies**:
-   - Use the provided `requirements.txt` to install the remaining dependencies:
-     ```bash
-     pip install -r requirements.txt
-     ```
-
-5. **Install spaCy Model**:
-   - Download the English model for `spaCy` used in the notebook:
-     ```bash
-     python -m spacy download en_core_web_sm
-     ```
-
-6. **Verify Installation**:
-   - Ensure all dependencies are installed correctly by running a Python shell and importing the libraries:
-     ```python
-     import torch, fitz, tqdm, sentence_transformers, accelerate, bitsandbytes, spacy, pandas, numpy
-     print("All dependencies imported successfully!")
-     ```
-
-7. **Run the Notebook**:
-   - Launch Jupyter Notebook and open `RAG_using_NLP.ipynb`:
-     ```bash
-     jupyter notebook
-     ```
-   - Ensure you select the kernel associated with your virtual environment (`rag_env`).
-
-### Notes
-
-- This project is designed to run on a local NVIDIA GPU (e.g., RTX 4090). If running on CPU, performance may vary.
-- An internet connection is required to download the models initially, but the pipeline can run offline afterward.
+## Requirements
+- Python 3.8+
+- NVIDIA GPU with CUDA support (minimum 8GB VRAM recommended)
+- ~10GB disk space (for embeddings and models)
 
 ## Project Structure
+- `rag_pipeline.py`: Main script to run the pipeline.
+- `pdf_processor.py`: Extracts and chunks PDF text.
+- `embedder.py`: Creates and manages embeddings.
+- `retriever.py`: Retrieves relevant chunks using Faiss.
+- `generator.py`: Generates answers with an LLM.
 
-- `RAG_using_NLP.ipynb`: Main notebook with the RAG pipeline implementation.
-- `requirements.txt`: List of Python dependencies.
-- `README.md`: Project overview and instructions.
+## Example Output
+```
+Query: What is User Awareness?
+Answer: User Awareness refers to understanding the needs, behaviors, and interactions of users with smart devices and environments in ubiquitous computing.
+```
 
-## License
+## Skills Demonstrated
+- **NLP**: Text extraction, chunking, embeddings.
+- **RAG**: Retrieval, augmentation, generation.
+- **Machine Learning**: Sentence Transformers, Faiss, LLMs.
+- **Software Engineering**: Modular design, error handling.
+- **GPU Optimization**: Local execution, batch processing.
 
-This project is licensed under the MIT License.
+## Future Improvements
+- Add a Gradio UI for interactive PDF uploads and Q&A.
+- Implement evaluation metrics for answer quality.
+- Scale to multiple PDFs with a vector database.
+
+## Author
+- Tirth Kanani
+- [LinkedIn](https://www.linkedin.com/in/tirthkanani/)
+
