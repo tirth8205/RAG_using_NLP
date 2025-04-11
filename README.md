@@ -1,12 +1,13 @@
 # Local RAG Pipeline using NLP for PDF Q&A
 
-This project implements a **Retrieval-Augmented Generation (RAG)** pipeline using **Natural Language Processing (NLP)** techniques to answer questions based on a user-specified PDF document. It runs locally on a GPU, processing text, generating embeddings, retrieving relevant chunks, and producing answers with a Large Language Model (LLM).
+This project implements a **Retrieval-Augmented Generation (RAG)** pipeline using **Natural Language Processing (NLP)** techniques to answer questions based on a user-specified PDF document. It runs locally, processing text, generating embeddings, retrieving relevant chunks, and producing answers with a user-selected Large Language Model (LLM) from Hugging Face.
 
 ## Features
 - **Custom PDF Support**: Users can upload any PDF via a command-line argument or web UI.
-- **Local Execution**: Runs on your GPU (e.g., NVIDIA RTX 4090) for privacy and speed.
-- **NLP-Driven**: Leverages text extraction, chunking, and embeddings for robust RAG.
-- **Modular Design**: Organized into reusable modules for maintainability.
+- **Hugging Face Model Selection**: Choose any Hugging Face model (e.g., `google/gemma-2b-it`) for answer generation.
+- **Local Execution**: Runs on your machine (CPU/GPU) for privacy and speed.
+- **Modern Web UI**: Built with FastAPI backend and custom HTML/CSS frontend for a responsive, user-friendly experience.
+- **Modular Design**: Organized into reusable modules (text processing, embeddings, retrieval, generation) for maintainability.
 
 ## Setup
 1. **Clone the Repository**:
@@ -19,7 +20,14 @@ This project implements a **Retrieval-Augmented Generation (RAG)** pipeline usin
    pip install -r requirements.txt
    python -m spacy download en_core_web_sm
    ```
-3. **Run the Pipeline**:
+3. **Authenticate with Hugging Face** (for gated models like `google/gemma-2b-it`):
+   - Generate a Hugging Face token at [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
+   - Run:
+     ```bash
+     huggingface-cli login
+     ```
+     Paste your token when prompted.
+4. **Run the Pipeline**:
    - Command-line:
      ```bash
      python rag_pipeline.py --pdf /path/to/your/file.pdf --query "Your question here"
@@ -28,20 +36,21 @@ This project implements a **Retrieval-Augmented Generation (RAG)** pipeline usin
      ```bash
      python app.py
      ```
-     Open the provided URL (e.g., `http://127.0.0.1:7860`) in your browser, upload a PDF, and ask a question.
+     Open the provided URL (e.g., `http://127.0.0.1:8000`) in your browser, specify a Hugging Face model ID, upload a PDF, and ask a question.
 
 ## Requirements
 - Python 3.11+
-- NVIDIA GPU with CUDA support (minimum 8GB VRAM recommended)
 - ~10GB disk space (for embeddings and models)
+- Optional: NVIDIA GPU with CUDA support (minimum 8GB VRAM recommended for faster processing)
 
 ## Project Structure
 - `rag_pipeline.py`: Main script for command-line RAG pipeline.
 - `pdf_processor.py`: Extracts and chunks PDF text.
 - `embedder.py`: Creates and manages embeddings.
 - `retriever.py`: Retrieves relevant chunks using Faiss.
-- `generator.py`: Generates answers with an LLM.
-- `app.py`: Web UI using Gradio.
+- `generator.py`: Generates answers with a user-specified Hugging Face LLM.
+- `app.py`: FastAPI backend for the web UI.
+- `templates/index.html`: Custom HTML/CSS frontend for the web UI.
 
 ## Example Output
 ```
@@ -54,11 +63,14 @@ Answer: User Awareness refers to understanding the needs, behaviors, and interac
 - **RAG**: Retrieval, augmentation, generation.
 - **Machine Learning**: Sentence Transformers, Faiss, LLMs.
 - **Software Engineering**: Modular design, error handling.
+- **Web Development**: FastAPI backend, custom HTML/CSS/JavaScript frontend, API design.
 - **GPU Optimization**: Local execution, batch processing.
 
 ## Future Improvements
 - Add evaluation metrics for answer quality.
 - Scale to multiple PDFs with a vector database.
+- Support more model types (e.g., non-causal LLMs) in the generator.
+- Add a loading indicator in the UI during processing.
 
 ## Author
 - Tirth Kanani
