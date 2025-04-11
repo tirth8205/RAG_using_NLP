@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Temporary files
+temp_*
+embeddings.csv
+
+# Large files
+*.pdf
+*.pkl
+*.h5
+
+# macOS
+.DS_Store
+
+# Hugging Face token (just in case)
+.huggingface/

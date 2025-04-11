@@ -4,21 +4,20 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from typing import List, Dict
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-LLM_MODEL_ID = 'google/gemma-2b-it'
 
-def load_llm() -> tuple[AutoTokenizer, AutoModelForCausalLM]:
-    """Load the LLM and tokenizer."""
+def load_llm(model_id: str) -> tuple[AutoTokenizer, AutoModelForCausalLM]:
+    """Load the LLM and tokenizer based on the provided model ID."""
     try:
-        tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL_ID)
-        model = AutoModelForCausalLM.from_pretrained(LLM_MODEL_ID).to(DEVICE)
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = AutoModelForCausalLM.from_pretrained(model_id).to(DEVICE)
         return tokenizer, model
     except Exception as e:
         print(f'Error loading LLM: {e}')
         return None, None
 
-def generate_answer(query: str, context_items: List[Dict]) -> str:
-    """Generate an answer based on query and context."""
-    tokenizer, model = load_llm()
+def generate_answer(query: str, context_items: List[Dict], model_id: str) -> str:
+    """Generate an answer based on query and context using the specified model."""
+    tokenizer, model = load_llm(model_id)
     if not tokenizer or not model:
         return 'Failed to load LLM.'
 
