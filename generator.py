@@ -1,8 +1,8 @@
 # generator.py
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from typing import List, Dict, Tuple # Tuple was in original, ensure it's used or remove
-import os # For API keys from environment (safer) - though we pass from frontend here
+from typing import List, Dict, Tuple # Ensure Tuple is used or remove
+# import os # Not strictly needed here if API keys are always passed as args
 
 # For External APIs
 import openai
@@ -15,15 +15,16 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 def load_hf_llm(model_id: str) -> Tuple[AutoTokenizer, AutoModelForCausalLM] | None:
     """Load the LLM and tokenizer from Hugging Face."""
     try:
-        # Consider adding proxy settings if needed:
-        # from transformers.utils import hub
-        # hub.HF_HUB_PROXY = "your_proxy_url" # If behind a proxy
-        # hub.HF_HUB_OFFLINE = True # For offline mode if models are pre-cached
+        print(f"Loading HF tokenizer: {model_id}")
         tokenizer = AutoTokenizer.from_pretrained(model_id)
+        print(f"Loading HF model: {model_id} to {DEVICE}")
         model = AutoModelForCausalLM.from_pretrained(model_id).to(DEVICE)
+        print(f"HF model {model_id} loaded successfully.")
         return tokenizer, model
     except Exception as e:
         print(f'Error loading Hugging Face LLM ({model_id}): {e}')
+        import traceback
+        traceback.print_exc()
         return None
 
 def generate_answer_hf(query: str, context_items: List[Dict], model_id: str) -> str:
@@ -35,11 +36,7 @@ def generate_answer_hf(query: str, context_items: List[Dict], model_id: str) -> 
     tokenizer, model = loaded_model_tuple
 
     context = "- " + "\n- ".join([item['sentence_chunk'] for item in context_items])
-    # Keep the prompt generic, but for some models, specific chat templates are better.
-    # The `apply_chat_template` handles this for models that have it.
-    # For others, a simple formatted string is fine.
     
-    # Construct a user message that includes context and query
     user_message_content = f"""Based on the following context, provide a concise, factual answer to the query.
 Context:
 {context}
@@ -47,34 +44,36 @@ Context:
 Query: {query}
 Answer:"""
 
-    try:
-        # Check if the model has a chat template
-        if hasattr(tokenizer, 'apply_chat_template') and callable(tokenizer.apply_chat_template):
-            try: # Some models might not have a default template even if the method exists
-                messages = [{'role': 'user', 'content': user_message_content}]
-                prompt_for_model = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-            except Exception as e_template:
-                print(f"Warning: Could not apply chat template for {model_id} (Error: {e_template}). Falling back to basic prompt.")
-                prompt_for_model = user_message_content # Fallback
-        else: # Fallback for models without a chat template method
-            prompt_for_model = user_message_content
+    prompt_for_model = user_message_content # Default if no chat template
 
+    try:
+        # Attempt to use chat template if available
+        if hasattr(tokenizer, 'apply_chat_template') and callable(tokenizer.apply_chat_template):
+            messages = [{'role': 'user', 'content': user_message_content}]
+            try:
+                prompt_for_model = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+                print(f"Applied chat template for {model_id}")
+            except Exception as e_template:
+                print(f"Warning: Could not apply chat template for {model_id} (Error: {e_template}). Using basic prompt format.")
+        else:
+            print(f"No chat template method found for {model_id}. Using basic prompt format.")
+            
         input_ids = tokenizer(prompt_for_model, return_tensors='pt').to(DEVICE)
         
-        # Adjust generation parameters as needed
-        # Gemma models sometimes benefit from specific EOS token handling or other params
+        print(f"Generating answer with HF model {model_id}...")
         outputs = model.generate(
             **input_ids,
-            max_new_tokens=300, # Increased max tokens for potentially longer summaries/answers
-            temperature=0.6,    # Slightly lower for more factual
+            max_new_tokens=350, 
+            temperature=0.6,   
             top_p=0.9,
             do_sample=True,
-            pad_token_id=tokenizer.eos_token_id if tokenizer.eos_token_id else 50256 # Common EOS, or handle per model
+            pad_token_id=tokenizer.eos_token_id if tokenizer.eos_token_id is not None else 50256 
         )
-        # The decoded output includes the prompt, so we need to remove it.
-        # This can be tricky. A common way is to decode only the generated part.
+        
+        # Decode only the newly generated tokens
         generated_ids = outputs[0][input_ids['input_ids'].shape[1]:]
         answer = tokenizer.decode(generated_ids, skip_special_tokens=True)
+        print("HF answer generation complete.")
         return answer.strip()
 
     except Exception as e:
@@ -85,69 +84,88 @@ Answer:"""
 
 # --- OpenAI API ---
 def generate_answer_openai(query: str, context_items: List[Dict], api_key: str, model_name: str) -> str:
+    print(f"Generating answer with OpenAI model: {model_name}")
     try:
         client = openai.OpenAI(api_key=api_key)
         context = "\n".join([item['sentence_chunk'] for item in context_items])
 
         messages = [
-            {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided context."},
+            {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided context. Be concise and factual."},
             {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}\n\nAnswer:"}
         ]
         
         completion = client.chat.completions.create(
             model=model_name,
             messages=messages,
-            temperature=0.5, # More factual
-            max_tokens=300
+            temperature=0.5, 
+            max_tokens=350
         )
+        print("OpenAI answer generation complete.")
         return completion.choices[0].message.content.strip()
-    except openai.APIConnectionError as e:
-        return f"OpenAI API Connection Error: {e}"
-    except openai.RateLimitError as e:
-        return f"OpenAI API Rate Limit Exceeded: {e}"
-    except openai.AuthenticationError as e:
-         return f"OpenAI API Authentication Error: Invalid API Key or organization. {e}"
-    except openai.APIError as e:
-        return f"OpenAI API Error: {e}"
+    except openai.APIConnectionError as e: return f"OpenAI API Connection Error: {e}"
+    except openai.RateLimitError as e: return f"OpenAI API Rate Limit Exceeded: {e}"
+    except openai.AuthenticationError as e: return f"OpenAI API Authentication Error: Invalid API Key or organization. {e}"
+    except openai.APIError as e: return f"OpenAI API Error: {e}"
     except Exception as e:
-        print(f"Error with OpenAI API: {e}")
+        print(f"Unexpected error with OpenAI API: {e}")
+        import traceback; traceback.print_exc()
         return f"An unexpected error occurred with OpenAI: {str(e)}"
 
 
 # --- Google Gemini API ---
 def generate_answer_gemini(query: str, context_items: List[Dict], api_key: str, model_name: str) -> str:
+    print(f"Generating answer with Google Gemini model: {model_name}")
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(model_name) # e.g., 'gemini-pro' or 'gemini-1.5-flash-latest'
+        # Safety settings can be adjusted if needed, e.g., for summarization tasks
+        safety_settings = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        ]
+        model = genai.GenerativeModel(model_name, safety_settings=safety_settings)
         context = "\n".join([item['sentence_chunk'] for item in context_items])
         
-        prompt = f"Based on the following context, please answer the question.\n\nContext:\n{context}\n\nQuestion: {query}\n\nAnswer:"
+        prompt = f"Based on the following context, please answer the question. Be concise and factual.\n\nContext:\n{context}\n\nQuestion: {query}\n\nAnswer:"
         
         response = model.generate_content(prompt)
-        return response.text.strip()
+        print("Google Gemini answer generation complete.")
+        # Handle cases where the response might be blocked or have no text
+        if response.parts:
+            return "".join(part.text for part in response.parts).strip()
+        elif response.prompt_feedback and response.prompt_feedback.block_reason:
+            return f"Content blocked by Gemini API. Reason: {response.prompt_feedback.block_reason_message or response.prompt_feedback.block_reason}"
+        else:
+            return "Gemini API returned an empty response or no usable parts."
+
     except Exception as e:
         print(f"Error with Google Gemini API: {e}")
-        # Gemini API can raise specific errors, e.g., google.api_core.exceptions.PermissionDenied for bad API key
+        import traceback; traceback.print_exc()
+        # Check for specific Gemini exceptions if library provides them
         return f"An error occurred with Google Gemini: {str(e)}"
 
 # --- Groq API ---
 def generate_answer_groq(query: str, context_items: List[Dict], api_key: str, model_name: str) -> str:
+    print(f"Generating answer with Groq model: {model_name}")
     try:
         client = Groq(api_key=api_key)
         context = "\n".join([item['sentence_chunk'] for item in context_items])
         messages = [
-            {"role": "system", "content": "You are a helpful assistant. Answer the question based on the provided context."},
+            {"role": "system", "content": "You are a helpful assistant. Answer the question based on the provided context. Be concise and factual."},
             {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}\n\nAnswer:"}
         ]
         completion = client.chat.completions.create(
-            model=model_name, # e.g., "llama3-8b-8192", "mixtral-8x7b-32768"
+            model=model_name,
             messages=messages,
             temperature=0.5,
-            max_tokens=300
+            max_tokens=350
         )
+        print("Groq answer generation complete.")
         return completion.choices[0].message.content.strip()
     except Exception as e:
         print(f"Error with Groq API: {e}")
+        import traceback; traceback.print_exc()
         return f"An error occurred with Groq: {str(e)}"
 
 
@@ -163,6 +181,7 @@ def generate_answer(
     """
     Dispatcher function to route to the appropriate LLM service.
     """
+    print(f"Dispatcher: llm_service='{llm_service}', hf_model_id='{hf_model_id}', api_model_name='{api_model_name}', api_key provided: {'Yes' if api_key else 'No'}")
     if llm_service == "huggingface":
         if not hf_model_id:
             return "Error: Hugging Face Model ID is required for local models."
