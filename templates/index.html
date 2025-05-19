@@ -137,6 +137,7 @@
             height: 280px; /* Adjusted */
             background-color: #e9ecef; /* Light gray for readonly */
             border-color: #ced4da;
+            white-space: pre-wrap; /* Ensure answer formatting is preserved */
         }
         .status-container, .model-options-container, .api-key-container, .hf-model-container, .api-model-name-container, .download-model-container {
             width:100%;
@@ -344,8 +345,8 @@
                 return;
             }
 
-            answerBox.value = '';
-            statusBox.innerHTML = 'Initializing request...<br>';
+            answerBox.value = ''; // Clear previous answer
+            statusBox.innerHTML = 'Initializing request...<br>'; // Clear previous statuses and start new
             submitBtn.disabled = true;
             clearBtn.disabled = true;
             downloadBtn.disabled = true;
@@ -368,9 +369,10 @@
                 });
 
                 if (!response.ok || !response.body) {
-                    const errorText = await response.text().catch(() => "Unknown server error.");
+                    const errorText = await response.text().catch(() => "Unknown server error while starting stream.");
                     statusBox.innerHTML += `<strong style="color: red;">Error starting stream: ${response.status} ${response.statusText}. ${errorText}</strong><br>`;
                     answerBox.value = `Error: Failed to start processing. ${errorText}`;
+                    // Re-enable buttons
                     submitBtn.disabled = false;
                     clearBtn.disabled = false;
                     downloadBtn.disabled = false;
@@ -379,62 +381,86 @@
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                let buffer = '';
+                let buffer = ''; // Buffer to handle partial messages
 
-                function processText(text) {
-                    buffer += text;
-                    let boundary = buffer.indexOf('\n\n');
-                    while (boundary !== -1) {
-                        const message = buffer.substring(0, boundary);
-                        buffer = buffer.substring(boundary + 2);
-                        if (message.trim() === '') {
-                            boundary = buffer.indexOf('\n\n');
-                            continue;
+                // Function to process each fully received SSE message
+                function handleSSEMessage(messageBlock) {
+                    if (messageBlock.trim() === '') return;
+
+                    let eventType = 'message'; // Default SSE event type
+                    let eventDataLines = [];
+
+                    messageBlock.split('\n').forEach(line => {
+                        if (line.startsWith('event: ')) {
+                            eventType = line.substring('event: '.length).trim();
+                        } else if (line.startsWith('data: ')) {
+                            eventDataLines.push(line.substring('data: '.length).trim());
                         }
+                        // Ignoring 'id:' and 'retry:' for simplicity
+                    });
+                    
+                    let eventData = eventDataLines.join('\n'); // Reconstruct multi-line data if any
 
-                        let eventType = 'message';
-                        let eventData = '';
-                        message.split('\n').forEach(line => {
-                            if (line.startsWith('event: ')) {
-                                eventType = line.substring('event: '.length).trim();
-                            } else if (line.startsWith('data: ')) {
-                                eventData = line.substring('data: '.length).trim();
-                            }
-                        });
+                    // The backend yields a dictionary like {"event": "...", "data": "..."}
+                    // sse-starlette wraps this. If `event` is specified in the dict,
+                    // it uses that for `event: <name>`. The `data` part will be the
+                    // JSON string of the *value* of the "data" key if the original "data" value was a simple string.
+                    // Or it will be the JSON string of the *rest* of the dict if data was more complex.
+                    // Our backend consistently yields {"event": "...", "data": "some string value"}
+                    // So `eventData` here *should* be "some string value" (possibly with quotes if JSON encoded)
 
-                        if (eventData) {
-                           let parsedData = eventData;
-                           if ((eventData.startsWith('{') && eventData.endsWith('}')) || (eventData.startsWith('[') && eventData.endsWith(']'))) {
-                               try { parsedData = JSON.parse(eventData); } catch (e) { /* treat as string if parse fails */ }
-                           }
-
-                            if (eventType === 'final_answer') {
-                                answerBox.value = parsedData;
-                                statusBox.innerHTML += `<strong>Answer received.</strong><br>`;
-                            } else if (eventType === 'error') {
-                                statusBox.innerHTML += `<strong style="color: red;">Error: ${parsedData}</strong><br>`;
-                                if (answerBox.value === '') answerBox.value = `Error: ${parsedData}`;
-                            } else if (eventType === 'status') {
-                                statusBox.innerHTML += `${parsedData}<br>`;
-                            } else {
-                                statusBox.innerHTML += `Update: ${parsedData}<br>`;
-                            }
-                            statusBox.scrollTop = statusBox.scrollHeight;
+                    // Try to remove quotes if it's a JSON-encoded string
+                    if (eventData.startsWith('"') && eventData.endsWith('"')) {
+                        try {
+                            eventData = JSON.parse(eventData);
+                        } catch (e) {
+                            // console.warn("Could not JSON.parse eventData, using as is:", eventData);
                         }
-                        boundary = buffer.indexOf('\n\n');
                     }
+                    // console.log("Received SSE:", "Event:", eventType, "Data:", eventData); // For debugging
+
+                    if (eventType === 'final_answer') {
+                        answerBox.value = eventData;
+                        statusBox.innerHTML += `<strong>Answer received.</strong><br>`;
+                    } else if (eventType === 'error') {
+                        statusBox.innerHTML += `<strong style="color: red;">Error: ${eventData}</strong><br>`;
+                        if (answerBox.value === '') answerBox.value = `Error: ${eventData}`; // Show error in answer box too if empty
+                    } else if (eventType === 'status') {
+                        statusBox.innerHTML += `${eventData}<br>`;
+                    } else { // Generic 'message' event if no specific event type from server
+                        statusBox.innerHTML += `Update: ${eventData}<br>`;
+                    }
+                    statusBox.scrollTop = statusBox.scrollHeight; // Auto-scroll
                 }
 
+                // Function to read from the stream
                 async function readStream() {
                     try {
                         while (true) {
                             const { done, value } = await reader.read();
                             if (done) {
-                                if (buffer.trim()) processText('');
+                                // Process any remaining data in the buffer
+                                if (buffer.trim()) {
+                                    const messages = buffer.split('\n\n');
+                                    messages.forEach(msg => {
+                                        if (msg.trim()) handleSSEMessage(msg);
+                                    });
+                                    buffer = ''; // Clear buffer after processing
+                                }
                                 statusBox.innerHTML += "Stream closed by server.<br>";
                                 break;
                             }
-                            processText(decoder.decode(value, { stream: true }));
+                            // Decode the chunk and add to buffer
+                            buffer += decoder.decode(value, { stream: true });
+
+                            // Process complete messages from buffer
+                            let boundary = buffer.indexOf('\n\n');
+                            while (boundary !== -1) {
+                                const messageToProcess = buffer.substring(0, boundary);
+                                buffer = buffer.substring(boundary + 2); // Skip '\n\n'
+                                handleSSEMessage(messageToProcess);
+                                boundary = buffer.indexOf('\n\n');
+                            }
                         }
                     } catch (streamError) {
                         console.error('Stream reading error:', streamError);
@@ -445,9 +471,9 @@
                         downloadBtn.disabled = false;
                     }
                 }
-                readStream();
+                readStream(); // Start reading the stream
 
-            } catch (error) {
+            } catch (error) { // Catch errors from the initial fetch POST
                 console.error('Fetch POST error:', error);
                 answerBox.value = 'Error: ' + error.message;
                 statusBox.textContent = 'Error: ' + error.message;
@@ -464,6 +490,7 @@
                 return;
             }
             statusBox.innerHTML = `Starting download/cache for ${modelIdToDownload}...<br>`;
+            answerBox.value = ''; // Clear answer box
             submitBtn.disabled = true;
             clearBtn.disabled = true;
             downloadBtn.disabled = true;
@@ -476,14 +503,14 @@
                 });
 
                 if (!response.ok || !response.body) {
-                    const errorText = await response.text().catch(() => "Unknown server error.");
+                    const errorText = await response.text().catch(() => "Unknown server error while starting download stream.");
                     statusBox.innerHTML += `<strong style="color: red;">Error starting download stream: ${response.status} ${response.statusText}. ${errorText}</strong><br>`;
                     submitBtn.disabled = false;
                     clearBtn.disabled = false;
                     downloadBtn.disabled = false;
                     return;
                 }
-
+                
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
@@ -499,15 +526,19 @@
                             continue;
                         }
                         let eventType = 'message';
-                        let eventData = '';
+                        let eventDataLines = [];
                         message.split('\n').forEach(line => {
                             if (line.startsWith('event: ')) {
                                 eventType = line.substring('event: '.length).trim();
                             } else if (line.startsWith('data: ')) {
-                                eventData = line.substring('data: '.length).trim();
+                                eventDataLines.push(line.substring('data: '.length).trim());
                             }
                         });
-                        if(eventData){
+                        let eventData = eventDataLines.join('\n');
+                        if (eventData.startsWith('"') && eventData.endsWith('"')) {
+                           try { eventData = JSON.parse(eventData); } catch (e) {}
+                        }
+                        if(eventData){ // Ensure eventData is not empty
                             statusBox.innerHTML += `${eventData}<br>`;
                             statusBox.scrollTop = statusBox.scrollHeight;
                         }
@@ -526,6 +557,7 @@
                             processDlStream(decoder.decode(value, { stream: true }));
                         }
                     } catch (streamError) {
+                        console.error('Download stream reading error:', streamError);
                         statusBox.innerHTML += `<strong style="color: red;">Download stream connection error: ${streamError.message}</strong><br>`;
                     } finally {
                         submitBtn.disabled = false;
@@ -536,6 +568,7 @@
                 readDlStream();
 
             } catch (error) {
+                console.error('Failed to initiate model download:', error);
                 statusBox.innerHTML += `<strong style="color: red;">Failed to initiate model download: ${error.message}</strong><br>`;
                 submitBtn.disabled = false;
                 clearBtn.disabled = false;
