@@ -6,6 +6,7 @@
     <title>RAG using NLP: PDF Q&A</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&Lora:wght@400;600&Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        /* --- PASTE YOUR FULL CSS HERE --- */
         * {
             margin: 0;
             padding: 0;
@@ -21,10 +22,10 @@
             font-family: 'Roboto', sans-serif;
         }
         .container {
-            background: linear-gradient(135deg, #fdfdfd, #f0f0f0); /* Slightly lighter container */
+            background: linear-gradient(135deg, #fdfdfd, #f0f0f0);
             border-radius: 20px;
-            padding: 30px 40px; /* Adjusted padding */
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Softer shadow */
+            padding: 30px 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             max-width: 1200px;
             width: 100%;
             display: flex;
@@ -33,24 +34,24 @@
         }
         .left-section, .right-section {
             flex: 1;
-            min-width: 300px; /* Min width for responsiveness */
-            padding: 10px; /* Added padding for sections */
+            min-width: 300px;
+            padding: 10px;
         }
         .right-section {
-            flex: 1.5; /* Give a bit more space to the answer */
+            flex: 1.5;
         }
         h1 {
             font-family: 'Playfair Display', serif;
-            color: #2c3e50; /* Darker, more professional color */
+            color: #2c3e50;
             text-align: center;
-            font-size: 2.6em; /* Slightly adjusted */
+            font-size: 2.6em;
             margin-bottom: 15px;
             width: 100%;
         }
         .description {
             font-family: 'Lora', serif;
             text-align: center;
-            font-size: 1.2em; /* Adjusted */
+            font-size: 1.2em;
             color: #555;
             margin-bottom: 30px;
             width: 100%;
@@ -59,68 +60,68 @@
             font-family: 'Lora', serif;
             font-weight: 600;
             color: #333;
-            font-size: 1.1em; /* Adjusted */
-            margin-bottom: 8px; /* Adjusted */
+            font-size: 1.1em;
+            margin-bottom: 8px;
             display: block;
         }
-        select, input[type="file"], textarea, input[type="text"], input[type="password"] { /* Added select and password */
+        select, input[type="file"], textarea, input[type="text"], input[type="password"] {
             font-family: 'Roboto', sans-serif;
-            border: 1px solid #ccc; /* Lighter border */
-            border-radius: 8px; /* Softer radius */
-            padding: 10px 12px; /* Adjusted padding */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px 12px;
             width: 100%;
-            background-color: #fff; /* White background for inputs */
+            background-color: #fff;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            margin-bottom: 18px; /* Adjusted */
+            margin-bottom: 18px;
             color: #333;
         }
         input[type="file"]::placeholder, textarea::placeholder, input[type="text"]::placeholder, input[type="password"]::placeholder {
-            color: #888; /* Lighter placeholder */
+            color: #888;
         }
         select:focus, input[type="file"]:focus, textarea:focus, input[type="text"]:focus, input[type="password"]:focus {
-            border-color: #007bff; /* Bootstrap blue for focus */
+            border-color: #007bff;
             box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
             outline: none;
         }
         textarea {
-            height: 100px; /* Adjusted */
-            resize: vertical; /* Allow vertical resize */
+            height: 100px;
+            resize: vertical;
         }
         input[type="file"]::file-selector-button {
             font-family: 'Roboto', sans-serif;
-            background-color: #007bff; /* Primary button color */
+            background-color: #007bff;
             border: none;
             padding: 8px 15px;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.2s ease;
             color: #ffffff;
-            margin-right: 10px; /* Space after button */
+            margin-right: 10px;
         }
         input[type="file"]::file-selector-button:hover {
-            background-color: #0056b3; /* Darker on hover */
+            background-color: #0056b3;
         }
         .button-container {
             text-align: center;
-            margin-top: 15px; /* Adjusted */
-            width: 100%; /* Ensure buttons are centered within their section */
+            margin-top: 15px;
+            width: 100%;
         }
         button {
             font-family: 'Roboto', sans-serif;
-            font-weight: 500; /* Medium weight */
-            background-color: #28a745; /* Green for submit */
+            font-weight: 500;
+            background-color: #28a745;
             color: white;
             border: none;
-            border-radius: 20px; /* Pill shape */
-            padding: 10px 30px; /* Adjusted padding */
-            font-size: 1.1em; /* Adjusted */
+            border-radius: 20px;
+            padding: 10px 30px;
+            font-size: 1.1em;
             cursor: pointer;
             transition: background-color 0.2s ease, transform 0.1s ease;
-            margin: 5px 8px; /* Added vertical margin */
+            margin: 5px 8px;
         }
         button:hover {
-            background-color: #218838; /* Darker green */
-            transform: translateY(-1px); /* Slight lift */
+            background-color: #218838;
+            transform: translateY(-1px);
         }
         button:disabled {
             background-color: #cccccc;
@@ -128,51 +129,51 @@
             transform: none;
         }
         #clear-btn {
-            background-color: #dc3545; /* Red for clear */
+            background-color: #dc3545;
         }
         #clear-btn:hover {
-            background-color: #c82333; /* Darker red */
+            background-color: #c82333;
         }
-        #answer { /* Answer box */
-            height: 280px; /* Adjusted */
-            background-color: #e9ecef; /* Light gray for readonly */
+        #answer {
+            height: 280px;
+            background-color: #e9ecef;
             border-color: #ced4da;
-            white-space: pre-wrap; /* Ensure answer formatting is preserved */
+            white-space: pre-wrap;
         }
         .status-container, .model-options-container, .api-key-container, .hf-model-container, .api-model-name-container, .download-model-container {
             width:100%;
             margin-top: 15px;
         }
         #status-messages {
-            font-family: 'Roboto Mono', monospace; /* Monospace for status */
+            font-family: 'Roboto Mono', monospace;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 12px;
-            margin-top: 5px; /* Space from its label */
+            margin-top: 5px;
             background-color: #f8f9fa;
             color: #333;
             min-height: 60px;
-            max-height: 180px; /* Limit height */
-            overflow-y: auto; /* Scroll for overflow */
-            white-space: pre-line; /* Respect newlines */
+            max-height: 180px;
+            overflow-y: auto;
+            white-space: pre-line;
             font-size: 0.9em;
             line-height: 1.6;
         }
         .footer {
             font-family: 'Lora', serif;
             text-align: center;
-            font-size: 1em; /* Adjusted */
-            color: #666; /* Subtler footer color */
+            font-size: 1em;
+            color: #666;
             margin-top: 35px;
             padding: 10px;
             width: 100%;
-            border-top: 1px solid #eee; /* Separator line */
+            border-top: 1px solid #eee;
         }
         .footer span {
-            color: #007bff; /* Brand color for name */
+            color: #007bff;
             font-weight: bold;
         }
-        .hidden { /* Utility class to hide elements */
+        .hidden {
             display: none;
         }
          hr {
@@ -182,7 +183,6 @@
             margin: 25px 0;
             width: 100%;
         }
-
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -190,7 +190,7 @@
             }
             .left-section, .right-section {
                 min-width: 100%;
-                flex-basis: auto; /* Allow sections to take natural height */
+                flex-basis: auto;
             }
             h1 { font-size: 2.2em; }
             .description { font-size: 1.1em; }
@@ -248,14 +248,16 @@
                  <h2>Manage Local Models</h2>
                 <label for="download-model-id">Hugging Face Model ID to Download/Cache:</label>
                 <input type="text" id="download-model-id" placeholder="e.g., google/gemma-2b-it">
-                <button id="download-btn" style="background-color: #17a2b8;">Download/Cache Model</button> </div>
+                <button id="download-btn" style="background-color: #17a2b8;">Download/Cache Model</button>
+            </div>
         </div>
 
         <div class="right-section">
             <label for="answer">Answer:</label>
             <textarea id="answer" readonly placeholder="The generated answer will appear here..."></textarea>
 
-            <div class="status-container"> <label for="status-messages">Processing Status:</label>
+            <div class="status-container">
+                <label for="status-messages">Processing Status:</label>
                 <div id="status-messages">Waiting for submission...</div>
             </div>
         </div>
@@ -266,21 +268,20 @@
     </div>
 
     <script>
+        // --- PASTE YOUR FULL JAVASCRIPT HERE ---
+        // Ensure all const declarations for UI elements are at the top
         const llmServiceSelect = document.getElementById('llm-service');
         const hfOptionsDiv = document.getElementById('huggingface-options');
         const apiKeySection = document.getElementById('api-key-section');
         const apiModelNameSection = document.getElementById('api-model-name-section');
         const apiModelExamples = document.getElementById('api-model-examples');
-
         const hfModelIdInput = document.getElementById('hf-model-id');
         const apiKeyInput = document.getElementById('api-key');
         const apiModelNameInput = document.getElementById('api-model-name');
-
         const submitBtn = document.getElementById('submit-btn');
         const clearBtn = document.getElementById('clear-btn');
         const downloadBtn = document.getElementById('download-btn');
         const downloadModelIdInput = document.getElementById('download-model-id');
-
         const pdfInput = document.getElementById('pdf-input');
         const queryInput = document.getElementById('query-input');
         const answerBox = document.getElementById('answer');
@@ -297,7 +298,6 @@
             hfOptionsDiv.classList.toggle('hidden', selectedService !== 'huggingface');
             apiKeySection.classList.toggle('hidden', selectedService === 'huggingface');
             apiModelNameSection.classList.toggle('hidden', selectedService === 'huggingface');
-
             if (selectedService !== 'huggingface') {
                 apiModelExamples.textContent = modelExamples[selectedService] || "";
                 if (selectedService === 'openai') apiModelNameInput.value = 'gpt-3.5-turbo';
@@ -308,181 +308,145 @@
                  apiModelExamples.textContent = "";
             }
         });
-        llmServiceSelect.dispatchEvent(new Event('change')); // Trigger on load
+        llmServiceSelect.dispatchEvent(new Event('change'));
 
+
+        function handleSSEMessage(messageBlock) {
+            if (messageBlock.trim() === '') return;
+
+            let eventType = 'message';
+            let eventDataLines = [];
+
+            console.log("DEBUG JS: Raw message block received:\n", messageBlock); // <<< ADDED FOR DEBUGGING
+
+            messageBlock.split('\n').forEach(line => {
+                if (line.startsWith('event: ')) {
+                    eventType = line.substring('event: '.length).trim();
+                } else if (line.startsWith('data: ')) {
+                    // Collect all data lines; sse-starlette might send data over multiple lines for a single event
+                    eventDataLines.push(line.substring('data: '.length)); // Keep leading/trailing spaces on data line for now
+                }
+            });
+            
+            let eventData = eventDataLines.join('\n').trim(); // Join multi-line data, then trim whitespace
+
+            console.log("DEBUG JS: Parsed Event Type:", eventType); // <<< ADDED FOR DEBUGGING
+            console.log("DEBUG JS: Raw Parsed Event Data:", eventData); // <<< ADDED FOR DEBUGGING
+
+            // sse-starlette sends string data enclosed in quotes if it's just a string.
+            // e.g., data: "This is a status message"
+            // We need to remove these quotes.
+            if (eventData.startsWith('"') && eventData.endsWith('"')) {
+                try {
+                    // This will unescape the string (e.g., convert \" to " and remove outer quotes)
+                    eventData = JSON.parse(eventData); 
+                } catch (e) {
+                    console.warn("DEBUG JS: Could not JSON.parse eventData that looked like a string, using as is:", eventData, "Error:", e);
+                }
+            }
+            console.log("DEBUG JS: Final Processed Event Data:", eventData); // <<< ADDED FOR DEBUGGING
+
+
+            if (eventType === 'final_answer') {
+                console.log("DEBUG JS: Handling 'final_answer'"); // <<< ADDED FOR DEBUGGING
+                answerBox.value = eventData;
+                statusBox.innerHTML += `<strong>Answer received.</strong><br>`;
+            } else if (eventType === 'error') {
+                console.log("DEBUG JS: Handling 'error'"); // <<< ADDED FOR DEBUGGING
+                const errorMessage = `Error: ${eventData}`;
+                statusBox.innerHTML += `<strong style="color: red;">${errorMessage}</strong><br>`;
+                answerBox.value = errorMessage;
+            } else if (eventType === 'status') {
+                console.log("DEBUG JS: Handling 'status'"); // <<< ADDED FOR DEBUGGING
+                statusBox.innerHTML += `${eventData}<br>`;
+            } else { 
+                console.log("DEBUG JS: Handling generic 'message' or unknown event type:", eventType); // <<< ADDED FOR DEBUGGING
+                statusBox.innerHTML += `Update (${eventType}): ${eventData}<br>`;
+            }
+            statusBox.scrollTop = statusBox.scrollHeight;
+        }
 
         submitBtn.addEventListener('click', async () => {
             const pdfFile = pdfInput.files[0];
             const query = queryInput.value;
             const llmService = llmServiceSelect.value;
-
             let hfModelId = '';
             let apiKey = '';
             let apiModelName = '';
 
             if (llmService === 'huggingface') {
                 hfModelId = hfModelIdInput.value;
-                if (!hfModelId) {
-                    statusBox.textContent = 'Error: Hugging Face Model ID is required for local models.';
-                    return;
-                }
+                if (!hfModelId) { statusBox.textContent = 'Error: Hugging Face Model ID required.'; return; }
             } else {
                 apiKey = apiKeyInput.value;
                 apiModelName = apiModelNameInput.value;
-                if (!apiKey) {
-                    statusBox.textContent = 'Error: API Key is required for the selected service.';
-                    return;
-                }
-                if (!apiModelName) {
-                    statusBox.textContent = 'Error: API Model Name is required for the selected service.';
-                    return;
-                }
+                if (!apiKey) { statusBox.textContent = 'Error: API Key required.'; return; }
+                if (!apiModelName) { statusBox.textContent = 'Error: API Model Name required.'; return; }
             }
+            if (!pdfFile || !query) { answerBox.value = ''; statusBox.textContent = 'Error: PDF and query required.'; return; }
 
-            if (!pdfFile || !query) {
-                answerBox.value = '';
-                statusBox.textContent = 'Error: Please upload a PDF and enter a query.';
-                return;
-            }
-
-            answerBox.value = ''; // Clear previous answer
-            statusBox.innerHTML = 'Initializing request...<br>'; // Clear previous statuses and start new
-            submitBtn.disabled = true;
-            clearBtn.disabled = true;
-            downloadBtn.disabled = true;
+            answerBox.value = '';
+            statusBox.innerHTML = 'Initializing request...<br>';
+            submitBtn.disabled = true; clearBtn.disabled = true; downloadBtn.disabled = true;
 
             const formData = new FormData();
             formData.append('pdf_file', pdfFile);
             formData.append('query', query);
             formData.append('llm_service', llmService);
-            if (llmService === 'huggingface') {
-                formData.append('hf_model_id', hfModelId);
-            } else {
-                formData.append('api_key', apiKey);
-                formData.append('api_model_name', apiModelName);
-            }
+            if (llmService === 'huggingface') formData.append('hf_model_id', hfModelId);
+            else { formData.append('api_key', apiKey); formData.append('api_model_name', apiModelName); }
 
             try {
-                const response = await fetch('/stream-process', {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const response = await fetch('/stream-process', { method: 'POST', body: formData });
                 if (!response.ok || !response.body) {
-                    const errorText = await response.text().catch(() => "Unknown server error while starting stream.");
-                    statusBox.innerHTML += `<strong style="color: red;">Error starting stream: ${response.status} ${response.statusText}. ${errorText}</strong><br>`;
-                    answerBox.value = `Error: Failed to start processing. ${errorText}`;
-                    // Re-enable buttons
-                    submitBtn.disabled = false;
-                    clearBtn.disabled = false;
-                    downloadBtn.disabled = false;
+                    const errorText = await response.text().catch(() => "Unknown server error starting stream.");
+                    statusBox.innerHTML += `<strong style="color: red;">Stream Start Error: ${response.status} ${errorText}</strong><br>`;
+                    answerBox.value = `Error: ${errorText}`;
+                    submitBtn.disabled = false; clearBtn.disabled = false; downloadBtn.disabled = false;
                     return;
                 }
-
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                let buffer = ''; // Buffer to handle partial messages
-
-                // Function to process each fully received SSE message
-                function handleSSEMessage(messageBlock) {
-                    if (messageBlock.trim() === '') return;
-
-                    let eventType = 'message'; // Default SSE event type
-                    let eventDataLines = [];
-
-                    messageBlock.split('\n').forEach(line => {
-                        if (line.startsWith('event: ')) {
-                            eventType = line.substring('event: '.length).trim();
-                        } else if (line.startsWith('data: ')) {
-                            eventDataLines.push(line.substring('data: '.length).trim());
-                        }
-                        // Ignoring 'id:' and 'retry:' for simplicity
-                    });
-                    
-                    let eventData = eventDataLines.join('\n'); // Reconstruct multi-line data if any
-
-                    // The backend yields a dictionary like {"event": "...", "data": "..."}
-                    // sse-starlette wraps this. If `event` is specified in the dict,
-                    // it uses that for `event: <name>`. The `data` part will be the
-                    // JSON string of the *value* of the "data" key if the original "data" value was a simple string.
-                    // Or it will be the JSON string of the *rest* of the dict if data was more complex.
-                    // Our backend consistently yields {"event": "...", "data": "some string value"}
-                    // So `eventData` here *should* be "some string value" (possibly with quotes if JSON encoded)
-
-                    // Try to remove quotes if it's a JSON-encoded string
-                    if (eventData.startsWith('"') && eventData.endsWith('"')) {
-                        try {
-                            eventData = JSON.parse(eventData);
-                        } catch (e) {
-                            // console.warn("Could not JSON.parse eventData, using as is:", eventData);
-                        }
-                    }
-                    // console.log("Received SSE:", "Event:", eventType, "Data:", eventData); // For debugging
-
-                    if (eventType === 'final_answer') {
-                        answerBox.value = eventData;
-                        statusBox.innerHTML += `<strong>Answer received.</strong><br>`;
-                    } else if (eventType === 'error') {
-                        statusBox.innerHTML += `<strong style="color: red;">Error: ${eventData}</strong><br>`;
-                        if (answerBox.value === '') answerBox.value = `Error: ${eventData}`; // Show error in answer box too if empty
-                    } else if (eventType === 'status') {
-                        statusBox.innerHTML += `${eventData}<br>`;
-                    } else { // Generic 'message' event if no specific event type from server
-                        statusBox.innerHTML += `Update: ${eventData}<br>`;
-                    }
-                    statusBox.scrollTop = statusBox.scrollHeight; // Auto-scroll
-                }
-
-                // Function to read from the stream
+                let buffer = '';
                 async function readStream() {
                     try {
                         while (true) {
                             const { done, value } = await reader.read();
                             if (done) {
-                                // Process any remaining data in the buffer
                                 if (buffer.trim()) {
                                     const messages = buffer.split('\n\n');
-                                    messages.forEach(msg => {
-                                        if (msg.trim()) handleSSEMessage(msg);
-                                    });
-                                    buffer = ''; // Clear buffer after processing
+                                    messages.forEach(msg => { if (msg.trim()) handleSSEMessage(msg); });
+                                    buffer = '';
                                 }
                                 statusBox.innerHTML += "Stream closed by server.<br>";
                                 break;
                             }
-                            // Decode the chunk and add to buffer
                             buffer += decoder.decode(value, { stream: true });
-
-                            // Process complete messages from buffer
                             let boundary = buffer.indexOf('\n\n');
                             while (boundary !== -1) {
                                 const messageToProcess = buffer.substring(0, boundary);
-                                buffer = buffer.substring(boundary + 2); // Skip '\n\n'
+                                buffer = buffer.substring(boundary + 2);
                                 handleSSEMessage(messageToProcess);
                                 boundary = buffer.indexOf('\n\n');
                             }
                         }
                     } catch (streamError) {
                         console.error('Stream reading error:', streamError);
-                        statusBox.innerHTML += `<strong style="color: red;">Stream connection error: ${streamError.message}</strong><br>`;
+                        statusBox.innerHTML += `<strong style="color: red;">Stream Error: ${streamError.message}</strong><br>`;
                     } finally {
-                        submitBtn.disabled = false;
-                        clearBtn.disabled = false;
-                        downloadBtn.disabled = false;
+                        submitBtn.disabled = false; clearBtn.disabled = false; downloadBtn.disabled = false;
                     }
                 }
-                readStream(); // Start reading the stream
-
-            } catch (error) { // Catch errors from the initial fetch POST
+                readStream();
+            } catch (error) {
                 console.error('Fetch POST error:', error);
-                answerBox.value = 'Error: ' + error.message;
-                statusBox.textContent = 'Error: ' + error.message;
-                submitBtn.disabled = false;
-                clearBtn.disabled = false;
-                downloadBtn.disabled = false;
+                answerBox.value = 'Error: ' + error.message; statusBox.textContent = 'Error: ' + error.message;
+                submitBtn.disabled = false; clearBtn.disabled = false; downloadBtn.disabled = false;
             }
         });
 
+        // --- PASTE THE downloadBtn and clearBtn JAVASCRIPT EVENT LISTENERS HERE ---
+        // (They were correct in the previous complete version)
         downloadBtn.addEventListener('click', async () => {
             const modelIdToDownload = downloadModelIdInput.value;
             if (!modelIdToDownload) {
@@ -490,10 +454,8 @@
                 return;
             }
             statusBox.innerHTML = `Starting download/cache for ${modelIdToDownload}...<br>`;
-            answerBox.value = ''; // Clear answer box
-            submitBtn.disabled = true;
-            clearBtn.disabled = true;
-            downloadBtn.disabled = true;
+            answerBox.value = ''; 
+            submitBtn.disabled = true; clearBtn.disabled = true; downloadBtn.disabled = true;
 
             try {
                 const response = await fetch('/download-hf-model', {
@@ -503,11 +465,9 @@
                 });
 
                 if (!response.ok || !response.body) {
-                    const errorText = await response.text().catch(() => "Unknown server error while starting download stream.");
-                    statusBox.innerHTML += `<strong style="color: red;">Error starting download stream: ${response.status} ${response.statusText}. ${errorText}</strong><br>`;
-                    submitBtn.disabled = false;
-                    clearBtn.disabled = false;
-                    downloadBtn.disabled = false;
+                    const errorText = await response.text().catch(() => "Unknown server error starting download stream.");
+                    statusBox.innerHTML += `<strong style="color: red;">Download Stream Start Error: ${response.status} ${errorText}</strong><br>`;
+                    submitBtn.disabled = false; clearBtn.disabled = false; downloadBtn.disabled = false;
                     return;
                 }
                 
@@ -515,67 +475,44 @@
                 const decoder = new TextDecoder();
                 let buffer = '';
 
-                function processDlStream(text) {
-                     buffer += text;
-                    let boundary = buffer.indexOf('\n\n');
-                    while (boundary !== -1) {
-                        const message = buffer.substring(0, boundary);
-                        buffer = buffer.substring(boundary + 2);
-                         if (message.trim() === '') {
-                            boundary = buffer.indexOf('\n\n');
-                            continue;
-                        }
-                        let eventType = 'message';
-                        let eventDataLines = [];
-                        message.split('\n').forEach(line => {
-                            if (line.startsWith('event: ')) {
-                                eventType = line.substring('event: '.length).trim();
-                            } else if (line.startsWith('data: ')) {
-                                eventDataLines.push(line.substring('data: '.length).trim());
-                            }
-                        });
-                        let eventData = eventDataLines.join('\n');
-                        if (eventData.startsWith('"') && eventData.endsWith('"')) {
-                           try { eventData = JSON.parse(eventData); } catch (e) {}
-                        }
-                        if(eventData){ // Ensure eventData is not empty
-                            statusBox.innerHTML += `${eventData}<br>`;
-                            statusBox.scrollTop = statusBox.scrollHeight;
-                        }
-                        boundary = buffer.indexOf('\n\n');
-                    }
-                }
+                // Using the same handleSSEMessage for simplicity, assuming server sends similar events
                 async function readDlStream() {
                      try {
                         while (true) {
                             const { done, value } = await reader.read();
                             if (done) {
-                                if (buffer.trim()) processDlStream('');
+                                if (buffer.trim()){
+                                     const messages = buffer.split('\n\n');
+                                    messages.forEach(msg => { if (msg.trim()) handleSSEMessage(msg); }); // Use handleSSEMessage
+                                    buffer = '';
+                                }
                                 statusBox.innerHTML += "Model download/cache process finished by server.<br>";
                                 break;
                             }
-                            processDlStream(decoder.decode(value, { stream: true }));
+                            buffer += decoder.decode(value, { stream: true });
+                            let boundary = buffer.indexOf('\n\n');
+                            while (boundary !== -1) {
+                                const messageToProcess = buffer.substring(0, boundary);
+                                buffer = buffer.substring(boundary + 2);
+                                handleSSEMessage(messageToProcess); // Use handleSSEMessage
+                                boundary = buffer.indexOf('\n\n');
+                            }
                         }
                     } catch (streamError) {
                         console.error('Download stream reading error:', streamError);
-                        statusBox.innerHTML += `<strong style="color: red;">Download stream connection error: ${streamError.message}</strong><br>`;
+                        statusBox.innerHTML += `<strong style="color: red;">Download Stream Error: ${streamError.message}</strong><br>`;
                     } finally {
-                        submitBtn.disabled = false;
-                        clearBtn.disabled = false;
-                        downloadBtn.disabled = false;
+                        submitBtn.disabled = false; clearBtn.disabled = false; downloadBtn.disabled = false;
                     }
                 }
                 readDlStream();
 
             } catch (error) {
                 console.error('Failed to initiate model download:', error);
-                statusBox.innerHTML += `<strong style="color: red;">Failed to initiate model download: ${error.message}</strong><br>`;
-                submitBtn.disabled = false;
-                clearBtn.disabled = false;
-                downloadBtn.disabled = false;
+                statusBox.innerHTML += `<strong style="color: red;">Model Download Init Error: ${error.message}</strong><br>`;
+                submitBtn.disabled = false; clearBtn.disabled = false; downloadBtn.disabled = false;
             }
         });
-
 
         clearBtn.addEventListener('click', () => {
             pdfInput.value = '';
@@ -584,7 +521,7 @@
             apiKeyInput.value = '';
             apiModelNameInput.value = '';
             llmServiceSelect.value = 'huggingface';
-            llmServiceSelect.dispatchEvent(new Event('change')); // Reset conditional fields
+            llmServiceSelect.dispatchEvent(new Event('change'));
             answerBox.value = '';
             statusBox.textContent = 'Cleared. Waiting for submission...';
             submitBtn.disabled = false;
