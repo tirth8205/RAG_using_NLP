@@ -146,7 +146,6 @@ async def rag_pipeline_streamer(
             generator.generate_answer,
             query,
             context_items,
-            chat_history=chat_history,
             llm_service=llm_service,
             hf_model_id=hf_model_id,
             api_key=api_key,
